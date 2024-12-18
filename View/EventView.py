@@ -1,44 +1,8 @@
 import discord
-from discord.ext import commands
-from discord.ui import Button, View, Select
-
-# 봇 설정
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True # 멤버 목록을 확인하도록함.
-bot = commands.Bot(command_prefix="!", intents=intents)
+from discord.ui import Button, View
 
 attendance = {}  # 참여 정보 저장
-events = {}  # 진행 중인 이벤트 저장
 
-# 멤버 확인 및 선택 트리거
-class MemberSelectView(View):
-    def __init__(self, guild):
-        super().__init__()
-        self.guild = guild
-        
-        options = [
-            discord.SelectOption(label = member.display, value = str(member.id))
-            for member in guild.members if not member.bot
-            ]
-
-        self.member_select = Select(
-            placeholder="참여자를 선택하세요",
-            options=options[:25],
-            )
-        self.member_select.callback = self.member_select_callback
-        self.add_item(self.member_select)
-        
-        async def select_member_callback(self, interaction: discord.Interaction()):
-            selected_member_id = self.member_select.values[0]
-            selected_member = self.guild.get_member(int(selected_member_id))
-            
-            await interaction.response.send_message(
-                f"선택된 참여자: {selected_member.display_name}", 
-                ephemeral=True
-            )
-
-# 버튼 뷰 정의
 class EventView(View):
     def __init__(self, event_name: str, target_channel_id: int):
         super().__init__(timeout=None)  # 버튼 시간 제한 없음
@@ -126,50 +90,3 @@ class EventView(View):
             await interaction.response.send_message("참여 취소 완료!", ephemeral=True)
         else:
             await interaction.response.send_message("참여하지 않으셨습니다.", ephemeral=True)
-
-
-@bot.command(aliases=["이벤트", "파티", "팟"])
-async def event(ctx, event_name: str = None):
-    """이벤트 생성 및 버튼 추가"""
-
-    # 인자가 누락된 경우
-    if event_name is None:
-        # ctx.invoked_with 사용하여 실제 호출된 명령어 확인
-        await ctx.send(f"{ctx.invoked_with} 이름을 입력해 주세요. 예: `!{ctx.invoked_with} 아브렐슈드`")
-        return
-    
-    # Embed 메시지 생성
-    embed = discord.Embed(
-        title=f"📅 **{event_name}** 이벤트에 참여하시겠습니까?",
-        description="**참여자**: 없음",
-        color=discord.Color.blue()
-    )
-    
-    members = [member.name for member in ctx.guild.members if not member.bot]
-    print(members)
-    select = Select(placeholder="참여할 멤버를 선택하세요!", options=[discord.SelectOption(label=member) for member in members])
-
-    # EventView 인스턴스 생성
-    event_view = EventView(event_name, target_channel_id=1315838146071498923)  # 다른 채널 ID
-    event_view.add_item(select)
-
-    # 초기 메시지 전송
-    message = await ctx.send(
-        embed=embed,
-        view=event_view,
-    )
-
-    # 참여 정보 저장
-    attendance[message.id] = {"참여": []}
-    events[event_name] = message.id
-
-    # 메시지 ID 초기화 후 EventView에 전달
-    event_view.message_id = message.id  # 메시지 ID 초기화
-    await message.edit(view=event_view)
-
-@bot.event
-async def on_ready():
-    print(f"봇 로그인: {bot.user}")
-
-# 봇 실행
-bot.run("봇 토큰")
