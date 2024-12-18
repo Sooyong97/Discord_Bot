@@ -35,7 +35,7 @@ class MemberSelectView(View):
             
             await interaction.response.send_message(
                 f"선택된 참여자: {selected_member.display_name}", 
-                phemeral=True
+                ephemeral=True
             )
 
 # 버튼 뷰 정의
@@ -129,8 +129,15 @@ class EventView(View):
 
 
 @bot.command(aliases=["이벤트", "파티", "팟"])
-async def event(ctx, event_name: str):
+async def event(ctx, event_name: str = None):
     """이벤트 생성 및 버튼 추가"""
+
+    # 인자가 누락된 경우
+    if event_name is None:
+        # ctx.invoked_with 사용하여 실제 호출된 명령어 확인
+        await ctx.send(f"{ctx.invoked_with} 이름을 입력해 주세요. 예: `!{ctx.invoked_with} 아브렐슈드`")
+        return
+    
     # Embed 메시지 생성
     embed = discord.Embed(
         title=f"📅 **{event_name}** 이벤트에 참여하시겠습니까?",
@@ -165,4 +172,4 @@ async def on_ready():
     print(f"봇 로그인: {bot.user}")
 
 # 봇 실행
-bot.run("봇토큰")
+bot.run("봇 토큰")
