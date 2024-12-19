@@ -3,7 +3,7 @@ from discord.ext import commands
 from View.EventView import EventView  # EventView 클래스 가져오기
 from View.MemberSelectView import MemberSelectView  # MemberSelectView 클래스 가져오기
 
-attendance = {}  # 참여 정보 저장
+# attendance = {}  # 참여 정보 저장
 events = {}  # 진행 중인 이벤트 저장
 
 # `bot` 객체를 외부에서 가져오기 위해 이 파일에서 import 하여 사용
@@ -26,6 +26,7 @@ async def setup(bot: commands.Bot):
             color=discord.Color.blue()
         )
 
+        # Discord 멤버호출
         members = [member.name for member in ctx.guild.members if not member.bot]
         select = discord.ui.Select(placeholder="참여할 멤버를 선택하세요!", options=[
             discord.SelectOption(label=member, value=member) for member in members
@@ -35,8 +36,8 @@ async def setup(bot: commands.Bot):
         event_view = EventView(event_name, target_channel_id=1315838146071498923, bot=bot)  # 다른 채널 ID
         event_view.add_item(select)
 
-        # MemberSelectView 인스턴스 생성
-        member_select_view = MemberSelectView(ctx.guild)
+        # # MemberSelectView 인스턴스 생성
+        # member_select_view = MemberSelectView(ctx.guild)
 
         # 초기 메시지 전송
         message = await ctx.send(
@@ -44,9 +45,12 @@ async def setup(bot: commands.Bot):
             view=event_view,
         )
 
-        # 참여 정보 저장
-        attendance[message.id] = {"참여": []}
-        events[event_name] = message.id
+        # 디버깅 로그 확인중 (12월)
+        print(f"DEBUG: Initializing attendance for message.id = {message.id}")
+
+        # # 참여 정보 저장
+        # attendance[message.id] = {"참여": []}
+        # events[event_name] = message.id
 
         # 메시지 ID 초기화 후 EventView에 전달
         event_view.message_id = message.id  # 메시지 ID 초기화
