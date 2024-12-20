@@ -13,6 +13,11 @@ class MemberSelectView(View):
             for member in guild.members if not member.bot
         ]
 
+        # 16개 미만일 경우 16개로 맞추기
+        while len(options) < 16:
+            empty_value = f"empty_{len(options) + 1}"  # 고유한 value 생성
+            options.append(discord.SelectOption(label="빈자리", value=empty_value))
+
         self.member_select = Select(
             placeholder="참여자를 선택하세요",
             options=options[:25],  # 최대 25명까지 보임
